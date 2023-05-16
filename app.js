@@ -108,6 +108,13 @@ app.get("/secrets", (req, res) => {
     res.redirect("/login")
   }
 })
+app.get("/submit", (req,res)=>{
+  if (req.isAuthenticated()) {
+    res.render("submit");
+  } else {
+    res.redirect("/login")
+  }
+})
 app.get("/logout", function (req, res) {
   req.logout((err) => {
     if (err) {
@@ -155,6 +162,7 @@ app.post("/login", passport.authenticate("local"), (req, res) => {
 
 
 })
+
 
 
 app.listen(process.env.PORT || 3000, function () {
