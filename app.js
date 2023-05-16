@@ -39,6 +39,9 @@ const userSchema = new mongoose.Schema({
   },
   googleId: {
     type: String,
+  },
+  secret: {
+    type: String,
   }
 });
 
@@ -102,11 +105,21 @@ app.get("/register", (req, res) => {
   res.render("register")
 });
 app.get("/secrets", (req, res) => {
-  if (req.isAuthenticated()) {
-    res.render("secrets");
-  } else {
-    res.redirect("/login")
-  }
+  User.find({"secret":{$ne:null}})
+  .then((foundUsers,err)=>{
+    if(err){
+      console.log(err)
+    }else{
+      if(foundUsers){
+        res.render("secrets",{userWithSecrets: foundUsers})
+      }
+    }
+  })
+  // if (req.isAuthenticated()) {
+  //   res.render("secrets");
+  // } else {
+  //   res.redirect("/login")
+  // }
 })
 app.get("/submit", (req,res)=>{
   if (req.isAuthenticated()) {
@@ -163,10 +176,25 @@ app.post("/login", passport.authenticate("local"), (req, res) => {
 
 })
 
+app.post("/submit",(req,res)=>{
+  const submittedSecret = req.body.secret
+
+  User.findById(req.user.id).then((foundUser, err)=>{
+    if(err){
+      console.log(err)
+    }else{
+      if(foundUser){
+        foundUser.secret = submittedSecret;
+        foundUser.save().then(res.redirect("/secrets")).catch((err)=>{console.log(err)})
+      }
+    }
+  }).catch((err)=>{console.log(err)})
+
+})
+
 
 
 app.listen(process.env.PORT || 3000, function () {
   console.log("Server started on port 3000");
 });
-
 
